@@ -1,0 +1,1 @@
+# ticker-search-chrome-extension
