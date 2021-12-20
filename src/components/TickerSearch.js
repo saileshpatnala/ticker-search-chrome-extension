@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import axios from 'axios';
-import { Chart } from "react-google-charts";
+// import { Chart } from "react-google-charts";
+import { Line } from "react-chartjs-2";
+import { Chart as ChartJS } from 'chart.js/auto'
+import { Chart }            from 'react-chartjs-2'
 
 
 class TickerSearch extends Component {
@@ -8,7 +11,10 @@ class TickerSearch extends Component {
         super();
         this.state = {
             ticker: null,
-            chartData: null,
+            chartData: {
+                labels: [],
+                data: []
+            },
         };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.getData = this.getData.bind(this);
@@ -38,23 +44,27 @@ class TickerSearch extends Component {
             console.log(data.chart.result[0])
             const timestamps = data.chart.result[0].timestamp;
             const values = data.chart.result[0].indicators.quote[0].close;
-            console.log(timestamps);
-            console.log(values);
+            // console.log(timestamps);
+            // console.log(values);
 
-            this.setState({ change: values[values.length-1]/values[0] });
-
-            let chartData = [["Timestamp", "Price"]]
+            let labels = [];
+            let dataPoints = [];
+            // var counter = 0;
             timestamps.forEach(
-                (element, index) =>  {
-                    const date = new Date(element*1000); // Unix time in ms
-                    const prettyDate = date.toDateString()
-                    chartData.push([prettyDate,values[index]])
+                (element, index) => {
+                    // const date = new Date(element * 1000); // epoch to ms
+                    // const formattedDate = date.toString();
+                    // labels.push(counter+1);
+                    labels.push("");
+                    dataPoints.push(values[index]);
+                    // counter += 1;
                 }
-            );
-            console.log("filtered chart data");
-            console.log(chartData);
+            )
             this.setState({
-                chartData: chartData
+                chartData: {
+                    labels: labels,
+                    data: dataPoints
+                }
             });
 
         })
@@ -64,25 +74,18 @@ class TickerSearch extends Component {
 
     }
 
-    render() {
-        let color = 'blue';
-        // if(this.state.change >= 1.01) color = 'green';
-        // if(this.state.change <= 0.99) color = 'red';
-        const options = {
-            legend :'none',
-            axisFontSize : 10,
-            hAxis: {
-                title: 'Time'
-            },
-            vAxis: {
-                title: 'Price'
-            },
-        };
-
-        const divStyle = {
-            borderBottom: '1px solid black',
-            verticalAlign: 'middle',
-            paddingLeft: '2rem',
+    render() {        
+        const chartOptions = {
+            labels: this.state.chartData.labels,
+            datasets: [
+                {
+                    label: "Price",
+                    data: this.state.chartData.data,
+                    fill: true,
+                    backgroundColor: "rgba(75,192,192,0.2)",
+                    borderColor: "rgba(75,192,192,1)"
+                }
+            ]
         };
 
         return (
@@ -103,14 +106,7 @@ class TickerSearch extends Component {
                 <div>
                 {
                     this.state.chartData && 
-                    < Chart
-                        chartType="LineChart"
-                        data={this.state.chartData}
-                        width="600px"
-                        height="350px"
-                        legendToggle
-                        options={options}  
-                    />
+                    <Line data={chartOptions}/>
                 }
                 </div>
                 <div className="App-header"></div>
