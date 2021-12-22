@@ -15,6 +15,7 @@ class TickerSearch extends Component {
                 labels: [],
                 data: []
             },
+            change: null
         };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.getData = this.getData.bind(this);
@@ -41,23 +42,19 @@ class TickerSearch extends Component {
             }
         })
         .then((data) => {
-            console.log(data.chart.result[0])
             const timestamps = data.chart.result[0].timestamp;
             const values = data.chart.result[0].indicators.quote[0].close;
-            // console.log(timestamps);
-            // console.log(values);
+
+            this.setState({
+                change: values[values.length - 1] / values[0]
+            });
 
             let labels = [];
             let dataPoints = [];
-            // var counter = 0;
             timestamps.forEach(
                 (element, index) => {
-                    // const date = new Date(element * 1000); // epoch to ms
-                    // const formattedDate = date.toString();
-                    // labels.push(counter+1);
                     labels.push("");
                     dataPoints.push(values[index]);
-                    // counter += 1;
                 }
             )
             this.setState({
@@ -75,6 +72,12 @@ class TickerSearch extends Component {
     }
 
     render() {        
+        var borderColor = ""
+        if (this.state.change > 1.00) {
+            borderColor = "rgba(1,209,88,0.91)"
+        } else {
+            borderColor = "rgba(228,4,15,0.91)"
+        }
         const chartOptions = {
             labels: this.state.chartData.labels,
             datasets: [
@@ -83,7 +86,7 @@ class TickerSearch extends Component {
                     data: this.state.chartData.data,
                     fill: true,
                     backgroundColor: "rgba(75,192,192,0.2)",
-                    borderColor: "rgba(75,192,192,1)"
+                    borderColor: borderColor
                 }
             ]
         };
@@ -96,6 +99,7 @@ class TickerSearch extends Component {
                             type="text" id="filter" 
                             placeholder="Enter ticker symbol..."
                             onChange={this.handleInputChange}
+                            onKeyPress={(e) => e.key == "Enter" && this.getData()}
                         />
                     </form>
                     <button type="button" className="btn btn-primary" 
